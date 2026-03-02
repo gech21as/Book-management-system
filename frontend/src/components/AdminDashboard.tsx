@@ -31,8 +31,20 @@ import { apiFetch } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import './AdminDashboard.css';
 
-export function AdminDashboard() {
+interface AdminDashboardProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function AdminDashboard({ onNavigate }: AdminDashboardProps) {
   const auth = useAuth();
+  
+  // Debug: Log current authentication state
+  console.log('=== Admin Dashboard Auth Debug ===');
+  console.log('User:', auth.user);
+  console.log('Token:', auth.token);
+  console.log('User Role:', auth.user?.role);
+  console.log('User Email:', auth.user?.email);
+  console.log('=====================================');
   
   // Check if user is authenticated and is admin
   if (!auth.user || !auth.token) {
@@ -214,10 +226,21 @@ export function AdminDashboard() {
         coverImage: ''
       });
       
+      // Navigate to catalog page to show the uploaded book
+      if (onNavigate) {
+        onNavigate('catalog');
+      }
+      
       // Reset file input
       if (coverInput) coverInput.value = '';
       
+      // Refresh books to ensure the uploaded book appears in catalog
       await loadBooks();
+      
+      // Refresh the catalog page's book list
+      if (onNavigate) {
+        onNavigate('catalog');
+      }
     } catch (err: any) {
       console.error('Upload error details:', err);
       
@@ -460,12 +483,55 @@ export function AdminDashboard() {
                 </div>
                 <div className="admin-form-group">
                   <Label htmlFor="fileLocation">File Location</Label>
-                  <Input
-                    id="fileLocation"
-                    value={uploadForm.origin}
-                    onChange={(e) => setUploadForm({ ...uploadForm, origin: e.target.value })}
-                    placeholder="Enter file path or location"
-                  />
+                  <div className="file-location-input-wrapper">
+                    <Input
+                      id="fileLocation"
+                      value={uploadForm.origin}
+                      onChange={(e) => setUploadForm({ ...uploadForm, origin: e.target.value })}
+                      placeholder="Enter file path or location"
+                      readOnly
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = '.pdf,.epub,.txt,.doc,.docx';
+                        input.onchange = (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            // Get file information
+                            const fileName = file.name;
+                            const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                            const fileType = file.type || 'Unknown';
+                            
+                            // Note: Due to browser security, we cannot access the full local file path
+                            // We can only access the filename, not the full path like C:\Users\...
+                            // The full path would be something like: file.name (no full path access)
+                            
+                            // Create a more informative path display
+                            const fileInfo = `${fileName} (${fileSize}, ${fileType})`;
+                            
+                            setUploadForm({ ...uploadForm, origin: fileInfo });
+                            
+                            console.log('Selected file:', {
+                              name: fileName,
+                              size: fileSize,
+                              type: fileType,
+                              lastModified: new Date(file.lastModified).toLocaleString(),
+                              note: 'Full path not accessible due to browser security'
+                            });
+                          }
+                        };
+                        input.click();
+                      }}
+                      className="file-browser-button"
+                    >
+                      <Search className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="admin-form-group">
                   <Label htmlFor="institution">Institution</Label>

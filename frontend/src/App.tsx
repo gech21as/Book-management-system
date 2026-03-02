@@ -6,7 +6,8 @@ import { BookCatalog } from './components/BookCatalog';
 import { BookDetail } from './components/BookDetail';
 import { BookReader } from './components/BookReader';
 import { Contact } from './components/Contact';
-import { AdminDashboard } from './components/AdminDashboardFixed';
+import { AdminDashboard } from './components/AdminDashboard';
+import { AdminLogin } from './components/AdminLogin';
 import { Chatbot } from './components/Chatbot';
 import { Footer } from './components/Footer';
 import { About } from './components/About';
@@ -24,6 +25,7 @@ type Page =
   | 'about'
   | 'contact'
   | 'admin'
+  | 'admin-login'
   | 'login'
   | 'register';
 
@@ -199,8 +201,11 @@ export default function App() {
           />
         ) : null;
 
+      case 'admin-login':
+        return <Login onSuccess={() => handleNavigate('login')} onNavigate={handleNavigate} />;
+
       case 'admin':
-        return <AdminDashboard />;
+        return <AdminDashboard onNavigate={handleNavigate} />;
 
       case 'contact':
         return <Contact />;

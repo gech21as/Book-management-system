@@ -17,6 +17,7 @@ export function Catalog({ books, onViewDetails }: CatalogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [selectedLanguage, setSelectedLanguage] = useState('All Languages');
+  const [sortBy, setSortBy] = useState('title');
 
   const filteredBooks = books.filter(book => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -25,8 +26,18 @@ export function Catalog({ books, onViewDetails }: CatalogProps) {
     
     const matchesCategory = selectedCategory === 'All Categories' || book.category === selectedCategory;
     const matchesLanguage = selectedLanguage === 'All Languages' || book.language === selectedLanguage;
-
+    
     return matchesSearch && matchesCategory && matchesLanguage;
+  }).sort((a, b) => {
+    if (sortBy === 'title') {
+      return a.title.localeCompare(b.title);
+    } else if (sortBy === 'author') {
+      return a.author.localeCompare(b.author);
+    } else if (sortBy === 'year') {
+      return a.year - b.year;
+    } else {
+      return a.title.localeCompare(b.title);
+    }
   });
 
   return (
@@ -38,51 +49,68 @@ export function Catalog({ books, onViewDetails }: CatalogProps) {
           <p className="catalog-subtitle">
             Explore {books.length} digitized heritage and educational books - all freely accessible
           </p>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="catalog-search-section">
-          {/* Search Bar */}
-          <div className="catalog-search-wrapper">
-            <Search className="catalog-search-icon" />
-            <Input
-              placeholder="Search by title, author, or description..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="catalog-search-input"
-            />
-          </div>
-
-          {/* Filters */}
-          <div className="catalog-filter-section">
-            <div className="catalog-filter-row">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="catalog-filter-select">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(category => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                <SelectTrigger className="catalog-filter-select">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map(language => (
-                    <SelectItem key={language} value={language}>
-                      {language}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          
+          {/* Sorting and Filters */}
+          <div className="catalog-controls">
+            <div className="catalog-filters">
+              {/* Search positioned at top-right */}
+              <div className="catalog-search-wrapper">
+                <div className="filter-group">
+                  <label className="filter-label">Search:</label>
+                  <Input
+                    placeholder="Search books..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="search-input"
+                  />
+                </div>
+              </div>
+              
+              {/* Three column filters */}
+              <div className="filter-group">
+                <label className="filter-label">Category:</label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger>
+                    {selectedCategory || 'All Categories'}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All Categories">All Categories</SelectItem>
+                    {categories.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="filter-group">
+                <label className="filter-label">Language:</label>
+                <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                  <SelectTrigger>
+                    {selectedLanguage || 'All Languages'}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All Languages">All Languages</SelectItem>
+                    {languages.map(lang => (
+                      <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="filter-group">
+                <label className="filter-label">Sort by:</label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger>
+                    {sortBy === 'title' ? 'Title' : sortBy === 'author' ? 'Author' : 'Year'}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="title">Title</SelectItem>
+                    <SelectItem value="author">Author</SelectItem>
+                    <SelectItem value="year">Year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-
             <Button 
               variant="outline" 
               onClick={() => {
