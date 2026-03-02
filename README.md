@@ -1,4 +1,4 @@
-# 📚 Heritage Archive - Digital Library System
+# 📚 Book Management System
 
 A modern web platform for browsing, reading, and managing digitized historical books and manuscripts.
 
